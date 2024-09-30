@@ -1,13 +1,20 @@
 import os
 import sys
+import json
 import boto3
 import yt_dlp
 from botocore.exceptions import ClientError
 
-def download_youtube_video(url, output_path):
+def load_cookies(cookie_file):
+    with open(cookie_file, 'r') as f:
+        cookies = json.load(f)
+    return cookies  # Return the entire cookie list
+
+def download_youtube_video(url, output_path, cookie_file):
     ydl_opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
+        'cookiefile': cookie_file,
     }
     
     try:
@@ -41,9 +48,10 @@ if __name__ == "__main__":
     video_url = "https://www.youtube.com/watch?v=_odcrBrvxdY&ab_channel=TopNotchProgrammer"
     output_path = "/tmp"
     s3_bucket = "ytdownloaderdocker"
+    cookie_file = "/app/cookies.json"
 
     print("Downloading video...")
-    video_filename = download_youtube_video(video_url, output_path)
+    video_filename = download_youtube_video(video_url, output_path, cookie_file)
     
     if video_filename:
         print(f"Video downloaded: {video_filename}")

@@ -11,5 +11,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ytdownload.py .
+COPY cookies.txt .
 
 CMD ["python", "ytdownload.py"]
