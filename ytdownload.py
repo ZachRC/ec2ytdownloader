@@ -1,14 +1,18 @@
 import os
 import sys
-import json
 import boto3
 import yt_dlp
+from http.cookiejar import MozillaCookieJar
 from botocore.exceptions import ClientError
 
 def load_cookies(cookie_file):
-    with open(cookie_file, 'r') as f:
-        cookies = json.load(f)
-    return cookies  # Return the entire cookie list
+    try:
+        cookiejar = MozillaCookieJar(cookie_file)
+        cookiejar.load(ignore_discard=True, ignore_expires=True)
+        return cookiejar
+    except Exception as e:
+        print(f"Error loading cookies: {str(e)}")
+        return None
 
 def download_youtube_video(url, output_path, cookie_file):
     ydl_opts = {
@@ -48,7 +52,12 @@ if __name__ == "__main__":
     video_url = "https://www.youtube.com/watch?v=_odcrBrvxdY&ab_channel=TopNotchProgrammer"
     output_path = "/tmp"
     s3_bucket = "ytdownloaderdocker"
-    cookie_file = "/app/cookies.json"
+    cookie_file = "/app/cookies.txt"
+
+    print("Loading cookies...")
+    cookies = load_cookies(cookie_file)
+    if cookies is None:
+        print("Failed to load cookies. Continuing without cookies.")
 
     print("Downloading video...")
     video_filename = download_youtube_video(video_url, output_path, cookie_file)
